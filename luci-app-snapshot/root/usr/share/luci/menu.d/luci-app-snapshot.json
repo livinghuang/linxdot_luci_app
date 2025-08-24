@@ -1,0 +1,10 @@
+{
+  "admin/system/snapshot": {
+    "title": _("快照管理"),
+    "order": 90,
+    "action": {
+      "type": "template",
+      "path": "snapshot/index"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+msgid "快照管理"
+msgstr "Snapshot Manager"
+
+msgid "建立快照 (Backup)"
+msgstr "Create Snapshot (Backup)"
+
+msgid "還原快照 (Restore)"
+msgstr "Restore Snapshot"

@@ -1,0 +1,26 @@
+<%+header%>
+
+<h2><%:快照管理%></h2>
+
+<form method="post" action="<%=url('admin/system/snapshot')%>">
+    <input type="hidden" name="cmd" value="backup" />
+    <input type="submit" value="<%:建立快照 (Backup)%>" />
+</form>
+
+<form method="post" action="<%=url('admin/system/snapshot')%>">
+    <input type="hidden" name="cmd" value="restore" />
+    <input type="submit" value="<%:還原快照 (Restore)%>" />
+</form>
+
+<%
+local cmd = luci.http.formvalue("cmd")
+local sys = require "luci.sys"
+
+if cmd == "backup" then
+    luci.template.render_string("<pre>" .. sys.exec("/mnt/usb/tool/snapshot/backup_snapshot.sh 2>&1") .. "</pre>")
+elseif cmd == "restore" then
+    luci.template.render_string("<pre>" .. sys.exec("/mnt/usb/tool/snapshot/restore_snapshot.sh 2>&1") .. "</pre>")
+end
+%>
+
+<%+footer%>

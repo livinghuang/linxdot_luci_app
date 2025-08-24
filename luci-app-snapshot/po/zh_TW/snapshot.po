@@ -1,0 +1,8 @@
+msgid "快照管理"
+msgstr "快照管理"
+
+msgid "建立快照 (Backup)"
+msgstr "建立快照 (備份)"
+
+msgid "還原快照 (Restore)"
+msgstr "還原快照"
