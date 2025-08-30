@@ -1,0 +1,151 @@
+<%+header%>
+
+  <h2>LoRa Gateway Overview</h2>
+
+  <!-- Gateway Operating Mode -->
+  <div class="cbi-section">
+    <h3>Gateway Operating Mode</h3>
+    <form id="overviewForm">
+      <div class="cbi-value">
+        <label class="cbi-value-title"
+               for="mode">Select Mode</label>
+        <div class="cbi-value-field">
+          <select name="mode"
+                  id="mode"
+                  onchange="toggleBackendSection()">
+            <option value="udp"
+                    <%=mode=="udp"
+                    and "selected"
+                    or ""
+                    %>>
+              Semtech UDP Forwarder
+            </option>
+            <option value="concentratord"
+                    <%=mode=="concentratord"
+                    and "selected"
+                    or ""
+                    %>>
+              ChirpStack Concentratord
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="cbi-value-description">
+        • <b>UDP Forwarder:</b> Traditional Semtech UDP packet forwarder (simple, single backend)<br />
+        • <b>Concentratord:</b> ChirpStack concentratord service (supports multiple backends)
+      </div>
+    </form>
+  </div>
+
+  <!-- Concentratord Backends -->
+  <div class="cbi-section"
+       id="backend_section">
+    <h3>Concentratord Backends</h3>
+    <div class="cbi-value">
+      <label class="cbi-value-title">Enable Backends</label>
+      <div class="cbi-value-field">
+        <label>
+          <input type="checkbox"
+                 name="backend_udp"
+                 id="backend_udp"
+                 value="1"
+                 <%=backend_udp=="1"
+                 and "checked"
+                 or ""
+                 %> />
+          UDP Forwarder (1700)
+        </label><br />
+        <label>
+          <input type="checkbox"
+                 name="backend_mqtt"
+                 id="backend_mqtt"
+                 value="1"
+                 <%=backend_mqtt=="1"
+                 and "checked"
+                 or ""
+                 %> />
+          MQTT Forwarder (1883)
+        </label><br />
+        <label>
+          <input type="checkbox"
+                 name="backend_mesh"
+                 id="backend_mesh"
+                 value="1"
+                 <%=backend_mesh=="1"
+                 and "checked"
+                 or ""
+                 %> />
+          Gateway Mesh (ZeroMQ)
+        </label>
+      </div>
+    </div>
+    <div class="cbi-value-description">
+      <b>Note:</b> These options are only available when running in
+      <i>ChirpStack Concentratord</i> mode.
+      If <i>Semtech UDP Forwarder</i> is selected, these options will be disabled.
+    </div>
+  </div>
+
+  <hr />
+
+  <!-- Save & Apply -->
+  <div class="cbi-section">
+    <div class="cbi-value">
+      <div class="cbi-value-field">
+        <button class="cbi-button cbi-button-apply"
+                type="button"
+                onclick="submitOverview()">Save & Apply</button>
+        <button class="cbi-button cbi-button-reset"
+                type="reset"
+                onclick="resetForm()">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/javascript">
+    function toggleBackendSection() {
+      var mode = document.getElementById("mode").value;
+      var backendSection = document.getElementById("backend_section");
+      var checkboxes = backendSection.querySelectorAll("input[type=checkbox]");
+      if (mode === "concentratord") {
+        backendSection.style.opacity = "1.0";
+        checkboxes.forEach(cb => cb.disabled = false);
+      } else {
+        backendSection.style.opacity = "0.5";
+        checkboxes.forEach(cb => cb.disabled = true);
+      }
+    }
+
+    function submitOverview() {
+      var form = document.getElementById("overviewForm");
+      var formData = new FormData(form);
+
+      formData.append("token", L.env.token);
+
+      ["backend_udp", "backend_mqtt", "backend_mesh"].forEach(id => {
+        var cb = document.getElementById(id);
+        if (cb && cb.checked) formData.append(id, "1");
+      });
+
+      fetch("<%=url('admin/lora/overview_set')%>", {
+        method: "POST",
+        body: formData
+      })
+        .then(r => r.json())
+        .then(data => {
+          alert(data.result || "Configuration updated");
+        })
+        .catch(err => {
+          alert("Request failed: " + err);
+        });
+    }
+
+    function resetForm() {
+      document.getElementById("overviewForm").reset();
+      toggleBackendSection();
+    }
+
+    toggleBackendSection();
+  </script>
+
+  <%+footer%>

@@ -1,0 +1,252 @@
+<%+header%>
+
+  <h2>UDP Forwarder</h2>
+
+  <!-- Service Information -->
+  <div class="cbi-section">
+    <h3>
+      Service Information
+      <button type="button"
+              class="cbi-button cbi-button-apply"
+              onclick="reloadInfo()"
+              style="margin-left:10px;">Reload Info</button>
+    </h3>
+    <div id="service-info">
+      <table class="cbi-section-table">
+        <tr>
+          <td><strong>MAC_ETH</strong></td>
+          <td id="mac_eth">
+            <%=info.mac_eth or "(unknown)"
+                            %>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>MAC_WLAN</strong></td>
+          <td id="mac_wlan">
+            <%=info.mac_wlan or "(unknown)"
+                             %>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>LoRa Status</strong></td>
+          <td id="lora_status">
+            <%=info.lora_status or "(unknown)"
+                                %>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Region</strong></td>
+          <td id="region">
+            <%=info.region or "(unknown)"
+                           %>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Config File</strong></td>
+          <td id="config_file">
+            <%=info.config_file or "(unknown)"
+                                %>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Service Status</strong></td>
+          <td id="service_status">
+            <%=info.lora_status%>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Server Address</strong></td>
+          <td id="server">
+            <%=info.server or "(unknown)"
+                           %>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Port Up</strong></td>
+          <td id="port_up">
+            <%=info.port_up or "(unknown)"
+                            %>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Port Down</strong></td>
+          <td id="port_down">
+            <%=info.port_down or "(unknown)"
+                              %>
+          </td>
+        </tr>
+        <tr>
+          <td><strong>Gateway ID</strong></td>
+          <td id="gateway_id">
+            <%=info.gateway_id or "(unknown)"
+                               %>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Configuration -->
+  <div class="cbi-section">
+    <h3>Configuration</h3>
+    <form id="configForm">
+      <%+lora /region_select%>
+
+        <div class="cbi-value">
+          <label class="cbi-value-title"
+                 for="server">Server Address</label>
+          <div class="cbi-value-field"><input type="text"
+                   name="server"
+                   id="server"
+                   value="<%=info.server%>" /></div>
+        </div>
+
+        <div class="cbi-value">
+          <label class="cbi-value-title"
+                 for="port_up">Port Up</label>
+          <div class="cbi-value-field"><input type="text"
+                   name="port_up"
+                   id="port_up"
+                   value="<%=info.port_up%>" /></div>
+        </div>
+
+        <div class="cbi-value">
+          <label class="cbi-value-title"
+                 for="port_down">Port Down</label>
+          <div class="cbi-value-field"><input type="text"
+                   name="port_down"
+                   id="port_down"
+                   value="<%=info.port_down%>" /></div>
+        </div>
+
+        <div class="cbi-value">
+          <label class="cbi-value-title"
+                 for="gateway_id">Gateway ID</label>
+          <div class="cbi-value-field"><input type="text"
+                   name="gateway_id"
+                   id="gateway_id"
+                   value="<%=info.gateway_id%>" /></div>
+        </div>
+
+        <div class="cbi-value">
+          <div class="cbi-value-field">
+            <button class="cbi-button cbi-button-apply"
+                    type="button"
+                    onclick="submitConfig()">Set Gateway</button>
+          </div>
+        </div>
+    </form>
+  </div>
+
+  <!-- Service Control -->
+  <div class="cbi-section">
+    <h3>Service Control</h3>
+    <button class="cbi-button cbi-button-apply"
+            onclick="controlService('start')">Start</button>
+    <button class="cbi-button cbi-button-apply"
+            onclick="controlService('stop')">Stop</button>
+    <button class="cbi-button cbi-button-apply"
+            onclick="controlService('restart')">Restart</button>
+  </div>
+
+  <!-- Log Preview -->
+  <div class="cbi-section">
+    <h3>Log Preview</h3>
+    <div style="margin-bottom: 5px;">
+      <button type="button"
+              class="cbi-button cbi-button-apply"
+              onclick="refreshLog()">Refresh Log</button>
+      <label style="margin-left:10px;">
+        <input type="checkbox"
+               id="autoRefresh"
+               onchange="toggleAutoRefresh()"
+               checked> Auto Refresh (5s)
+      </label>
+    </div>
+    <iframe id="logframe"
+            src="<%=url('admin/lora/udp_log')%>"
+            style="width:100%; height:600px; border:1px solid #ccc; background:#f7f7f7;">
+    </iframe>
+  </div>
+
+  <script type="text/javascript">
+    var autoRefreshTimer = null;
+
+    function refreshLog() {
+      var frame = document.getElementById("logframe");
+      frame.contentWindow.location.reload();
+      frame.onload = function () {
+        var doc = frame.contentDocument || frame.contentWindow.document;
+        frame.contentWindow.scrollTo(0, doc.body.scrollHeight);
+      };
+    }
+
+    function toggleAutoRefresh() {
+      var checkbox = document.getElementById("autoRefresh");
+      if (checkbox.checked) {
+        autoRefreshTimer = setInterval(refreshLog, 5000);
+      } else {
+        clearInterval(autoRefreshTimer);
+        autoRefreshTimer = null;
+      }
+    }
+
+    window.onload = function () {
+      document.getElementById("autoRefresh").checked = true;
+      toggleAutoRefresh();
+    };
+
+    /* Reload Info */
+    function reloadInfo() {
+      fetch("<%=url('admin/lora/udp_info')%>")
+        .then(r => r.json())
+        .then(data => {
+          document.getElementById("mac_eth").innerText = data.mac_eth || "(unknown)";
+          document.getElementById("mac_wlan").innerText = data.mac_wlan || "(unknown)";
+          document.getElementById("lora_status").innerText = data.lora_status || "(unknown)";
+          document.getElementById("region").innerText = data.region || "(unknown)";
+          document.getElementById("config_file").innerText = data.config_file || "(unknown)";
+          document.getElementById("service_status").innerText = data.lora_status || "(unknown)";
+          document.getElementById("server").innerText = data.server || "(unknown)";
+          document.getElementById("port_up").innerText = data.port_up || "(unknown)";
+          document.getElementById("port_down").innerText = data.port_down || "(unknown)";
+          document.getElementById("gateway_id").innerText = data.gateway_id || "(unknown)";
+        });
+    }
+
+    /* Submit Config */
+    function submitConfig() {
+      var form = document.getElementById("configForm");
+      var formData = new FormData(form);
+
+      formData.append("token", L.env.token); // 加入 CSRF token
+
+      fetch("<%=url('admin/lora/udp_config')%>", {
+        method: "POST",
+        body: formData
+      })
+        .then(r => r.json())
+        .then(data => {
+          alert(data.result || "Configuration updated");
+          reloadInfo();
+        })
+        .catch(err => {
+          alert("Request failed: " + err);
+        });
+    }
+
+    /* Control Service */
+    function controlService(action) {
+      fetch("<%=url('admin/lora/udp_service')%>?service=" + action)
+        .then(r => r.json())
+        .then(data => {
+          if (data.status === "ok") {
+            reloadInfo();
+          } else {
+            alert("Service action failed: " + (data.message || "unknown error"));
+          }
+        });
+    }
+  </script>
+
+  <%+footer%>
