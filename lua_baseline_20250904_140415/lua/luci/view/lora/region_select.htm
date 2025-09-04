@@ -1,0 +1,19 @@
+<div class="cbi-value">
+  <label class="cbi-value-title" for="region">Switch Region</label>
+  <div class="cbi-value-field">
+    <select name="region" id="region">
+      <option value="AS923"   <%= (info and info.region=="AS923")   and "selected" or "" %>>AS923 (Asia General)</option>
+      <option value="AS923_1" <%= (info and info.region=="AS923_1") and "selected" or "" %>>AS923-1 (Sub-band 1)</option>
+      <option value="AS923_2" <%= (info and info.region=="AS923_2") and "selected" or "" %>>AS923-2 (Sub-band 2)</option>
+      <option value="AS923_3" <%= (info and info.region=="AS923_3") and "selected" or "" %>>AS923-3 (Sub-band 3)</option>
+      <option value="AS923_4" <%= (info and info.region=="AS923_4") and "selected" or "" %>>AS923-4 (Sub-band 4)</option>
+      <option value="EU868"   <%= (info and info.region=="EU868")   and "selected" or "" %>>EU868 (Europe)</option>
+      <option value="US915"   <%= (info and info.region=="US915")   and "selected" or "" %>>US915 (USA)</option>
+      <option value="AU915"   <%= (info and info.region=="AU915")   and "selected" or "" %>>AU915 (Australia)</option>
+      <option value="KR920"   <%= (info and info.region=="KR920")   and "selected" or "" %>>KR920 (Korea)</option>
+      <option value="IN865"   <%= (info and info.region=="IN865")   and "selected" or "" %>>IN865 (India)</option>
+      <option value="CN470"   <%= (info and info.region=="CN470")   and "selected" or "" %>>CN470 (China)</option>
+      <option value="RU864"   <%= (info and info.region=="RU864")   and "selected" or "" %>>RU864 (Russia)</option>
+    </select>
+  </div>
+</div>

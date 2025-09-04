@@ -95,37 +95,45 @@
         <div class="cbi-value">
           <label class="cbi-value-title"
                  for="server">Server Address</label>
-          <div class="cbi-value-field"><input type="text"
+          <div class="cbi-value-field">
+            <input type="text"
                    name="server"
                    id="server"
-                   value="<%=info.server%>" /></div>
+                   value="<%=info.server%>" />
+          </div>
         </div>
 
         <div class="cbi-value">
           <label class="cbi-value-title"
                  for="port_up">Port Up</label>
-          <div class="cbi-value-field"><input type="text"
+          <div class="cbi-value-field">
+            <input type="text"
                    name="port_up"
                    id="port_up"
-                   value="<%=info.port_up%>" /></div>
+                   value="<%=info.port_up%>" />
+          </div>
         </div>
 
         <div class="cbi-value">
           <label class="cbi-value-title"
                  for="port_down">Port Down</label>
-          <div class="cbi-value-field"><input type="text"
+          <div class="cbi-value-field">
+            <input type="text"
                    name="port_down"
                    id="port_down"
-                   value="<%=info.port_down%>" /></div>
+                   value="<%=info.port_down%>" />
+          </div>
         </div>
 
         <div class="cbi-value">
           <label class="cbi-value-title"
                  for="gateway_id">Gateway ID</label>
-          <div class="cbi-value-field"><input type="text"
+          <div class="cbi-value-field">
+            <input type="text"
                    name="gateway_id"
                    id="gateway_id"
-                   value="<%=info.gateway_id%>" /></div>
+                   value="<%=info.gateway_id%>" />
+          </div>
         </div>
 
         <div class="cbi-value">
@@ -168,13 +176,13 @@
             style="width:100%; height:600px; border:1px solid #ccc; background:#f7f7f7;">
     </iframe>
   </div>
-
   <script type="text/javascript">
     var autoRefreshTimer = null;
 
     function refreshLog() {
       var frame = document.getElementById("logframe");
       frame.contentWindow.location.reload();
+
       frame.onload = function () {
         var doc = frame.contentDocument || frame.contentWindow.document;
         frame.contentWindow.scrollTo(0, doc.body.scrollHeight);
@@ -219,8 +227,6 @@
       var form = document.getElementById("configForm");
       var formData = new FormData(form);
 
-      formData.append("token", L.env.token); // 加入 CSRF token
-
       fetch("<%=url('admin/lora/udp_config')%>", {
         method: "POST",
         body: formData
@@ -231,7 +237,7 @@
           reloadInfo();
         })
         .catch(err => {
-          alert("Request failed: " + err);
+          alert("Failed to update configuration: " + err);
         });
     }
 
@@ -241,12 +247,49 @@
         .then(r => r.json())
         .then(data => {
           if (data.status === "ok") {
-            reloadInfo();
+            document.getElementById("lora_status").innerText = data.lora_status;
+            document.getElementById("service_status").innerText = data.lora_status;
           } else {
             alert("Service action failed: " + (data.message || "unknown error"));
           }
         });
     }
+
+
+    /* Submit Config */
+    function submitConfig() {
+      var form = document.getElementById("configForm");
+      var formData = new FormData(form);
+
+      // 🔑 加入 LuCI 的 CSRF token
+      formData.append("token", L.env.token);
+
+      fetch("<%=url('admin/lora/udp_config')%>", {
+        method: "POST",
+        body: formData
+      })
+        .then(r => r.text())
+        .then(txt => {
+          console.log("RAW response:", txt);
+          try {
+            var data = JSON.parse(txt);
+            alert(data.result || "Configuration updated");
+            reloadInfo();
+          } catch (e) {
+            alert("Failed to parse JSON: " + e + "\nResponse was:\n" + txt);
+          }
+        })
+        .catch(err => {
+          alert("Request failed: " + err);
+        });
+    }
+
+    function clearLogWindow() {
+      document.getElementById("log-content").innerText = "";  // 清掉前端 log 視窗
+    }
+
+
+
   </script>
 
   <%+footer%>

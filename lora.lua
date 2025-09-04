@@ -1,65 +1,45 @@
+-- /usr/lib/lua/luci/controller/lora.lua
 module("luci.controller.lora", package.seeall)
 
 function index()
   entry({ "admin", "lora" }, firstchild(), "LoRa", 50).dependent = false
+
   -- Overview
-  entry({ "admin", "lora", "overview" }, call("action_overview"), "Overview", 1)
-  entry({ "admin", "lora", "overview_set" }, post("action_overview_set")).leaf = true
-  -- UDP Forwarder
-  entry({ "admin", "lora", "udp" }, call("action_udp"), "UDP Forwarder", 2)
-  entry({ "admin", "lora", "udp_config" }, post("action_udp_config")).leaf = true
-  entry({ "admin", "lora", "udp_log" }, call("action_udp_log")).leaf = true
-  entry({ "admin", "lora", "udp_info" }, call("action_udp_info")).leaf = true
-  entry({ "admin", "lora", "udp_service" }, call("action_udp_service")).leaf = true
+  entry({ "admin", "lora", "overview" }, call("overview_dispatch", "action_overview"), "Overview", 1)
+  entry({ "admin", "lora", "overview_set" }, post("overview_dispatch", "action_overview_set")).leaf = true
+
+  -- UDP Forwarder (舊版用的配置頁，保留)
+  entry({ "admin", "lora", "udp" }, call("udp_dispatch", "action_udp"), "UDP Forwarder", 2)
+  entry({ "admin", "lora", "udp_config" }, post("udp_dispatch", "action_udp_config")).leaf = true
+  entry({ "admin", "lora", "udp_log" }, call("udp_dispatch", "action_udp_log")).leaf = true
+  entry({ "admin", "lora", "udp_info" }, call("udp_dispatch", "action_udp_info")).leaf = true
+  entry({ "admin", "lora", "udp_service" }, call("udp_dispatch", "action_udp_service")).leaf = true
+
+  -- Concentrator (新 tabs 架構)
+  entry({ "admin", "lora", "concentrator" }, firstchild(), "Concentrator", 3).dependent = false
+  entry({ "admin", "lora", "concentrator", "overview" }, call("concentrator_dispatch", "action_overview"), "Overview", 1)
+  -- entry({ "admin", "lora", "concentrator", "udp" }, call("concentrator_dispatch", "action_udp"), "UDP Forwarder", 2)
+  -- entry({ "admin", "lora", "concentrator", "mqtt" }, call("concentrator_dispatch", "action_mqtt"), "MQTT Forwarder", 3)
+  -- entry({ "admin", "lora", "concentrator", "mesh" }, call("concentrator_dispatch", "action_mesh"), "Mesh", 4)
 end
 
--- Overview page
-function action_overview()
-  local uci          = require "luci.model.uci".cursor()
-  local mode         = uci:get("linxdot_lora", "forwarder", "mode") or "udp"
-  local backend_udp  = uci:get("linxdot_lora", "forwarder", "backend_udp") or "0"
-  local backend_mqtt = uci:get("linxdot_lora", "forwarder", "backend_mqtt") or "0"
-  local backend_mesh = uci:get("linxdot_lora", "forwarder", "backend_mesh") or "0"
-
-  luci.template.render("lora/overview", {
-    mode         = mode,
-    backend_udp  = backend_udp,
-    backend_mqtt = backend_mqtt,
-    backend_mesh = backend_mesh
-  })
+-- Dispatcher for overview.lua
+function overview_dispatch(func)
+  local overview = require("lora.overview")
+  assert(type(overview[func]) == "function", "overview." .. func .. " not found")
+  overview[func]()
 end
 
--- Update mode & backends
-function action_overview_set()
-  local http         = require "luci.http"
-  local uci          = require "luci.model.uci".cursor()
+-- Dispatcher for udp.lua
+function udp_dispatch(func)
+  local udp = require("lora.udp")
+  assert(type(udp[func]) == "function", "udp." .. func .. " not found")
+  udp[func]()
+end
 
-  local mode         = http.formvalue("mode")
-  local backend_udp  = http.formvalue("backend_udp")
-  local backend_mqtt = http.formvalue("backend_mqtt")
-  local backend_mesh = http.formvalue("backend_mesh")
-
-  if mode == "udp" then
-    uci:set("linxdot_lora", "forwarder", "mode", "udp")
-    -- 清除 backend 選項，避免混淆
-    uci:delete("linxdot_lora", "forwarder", "backend_udp")
-    uci:delete("linxdot_lora", "forwarder", "backend_mqtt")
-    uci:delete("linxdot_lora", "forwarder", "backend_mesh")
-  elseif mode == "concentratord" then
-    uci:set("linxdot_lora", "forwarder", "mode", "concentratord")
-    uci:set("linxdot_lora", "forwarder", "backend_udp", backend_udp and "1" or "0")
-    uci:set("linxdot_lora", "forwarder", "backend_mqtt", backend_mqtt and "1" or "0")
-    uci:set("linxdot_lora", "forwarder", "backend_mesh", backend_mesh and "1" or "0")
-  end
-
-  uci:commit("linxdot_lora")
-
-  http.prepare_content("application/json")
-  http.write_json({
-    result       = "Configuration updated",
-    mode         = mode,
-    backend_udp  = backend_udp or "0",
-    backend_mqtt = backend_mqtt or "0",
-    backend_mesh = backend_mesh or "0"
-  })
+-- Dispatcher for concentrator.lua
+function concentrator_dispatch(func)
+  local concentrator = require("lora.concentrator")
+  assert(type(concentrator[func]) == "function", "concentrator." .. func .. " not found")
+  concentrator[func]()
 end
