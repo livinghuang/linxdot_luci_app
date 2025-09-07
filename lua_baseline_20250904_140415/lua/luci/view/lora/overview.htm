@@ -1,121 +1,63 @@
 <%+header%>
-
   <h2>LoRa Gateway Overview</h2>
-
   <div class="cbi-section">
     <h3>Gateway Operating Mode</h3>
     <form id="overviewForm">
       <div class="cbi-value">
-        <label class="cbi-value-title"
-               for="mode">Select Mode</label>
+        <label class="cbi-value-title" for="mode">Select Mode</label>
         <div class="cbi-value-field">
-          <select name="mode"
-                  id="mode"
-                  onchange="toggleBackendSection(); updateArchImage();">
-            <option value="udp"
-                    <%=mode=="udp"
-                    and "selected"
-                    or ""
-                    %>>
-              Semtech UDP Forwarder
-            </option>
-            <option value="concentratord"
-                    <%=mode=="concentratord"
-                    and "selected"
-                    or ""
-                    %>>
-              ChirpStack Concentratord
-            </option>
+          <select name="mode" id="mode" onchange="toggleBackendSection(); updateArchImage();">
+            <option value="udp" <%=mode=="udp" and "selected" or "" %>>Semtech UDP Forwarder</option>
+            <option value="concentrator" <%=mode=="concentrator" and "selected" or "" %>>ChirpStack Concentrator</option>
           </select>
         </div>
       </div>
     </form>
   </div>
-
-  <div class="cbi-section"
-       id="backend_section">
-    <h3>Concentratord Backends</h3>
+  <div class="cbi-section" id="backend_section">
+    <h3>Concentrator Backends</h3>
     <div class="cbi-value-field">
       <label>
-        <input type="checkbox"
-               name="backend_udp"
-               id="backend_udp"
-               value="1"
-               <%=backend_udp=="1"
-               and "checked"
-               or ""
-               %>
-        onchange="updateArchImage()"> UDP Forwarder (1700)
-      </label><br />
+        <input type="checkbox" name="backend_udp" id="backend_udp" value="1" <%=backend_udp=="1" and "checked" or "" %> onchange="updateArchImage()"> UDP Forwarder (UDP)
+      </label>
+      <br />
       <label>
-        <input type="checkbox"
-               name="backend_mqtt"
-               id="backend_mqtt"
-               value="1"
-               <%=backend_mqtt=="1"
-               and "checked"
-               or ""
-               %>
-        onchange="updateArchImage()"> MQTT Forwarder (1883)
-      </label><br />
+        <input type="checkbox" name="backend_mqtt" id="backend_mqtt" value="1" <%=backend_mqtt=="1" and "checked" or "" %>onchange="updateArchImage()"> MQTT Forwarder (MQTT)
+      </label>
+      <br />
       <label>
-        <input type="checkbox"
-               name="backend_mesh_border"
-               id="backend_mesh_border"
-               value="1"
-               <%=backend_mesh_border=="1"
-               and "checked"
-               or ""
-               %>
-        onchange="updateArchImage()"> Gateway Mesh <b>Border</b> (ZeroMQ)
-      </label><br />
+        <input type="checkbox" name="backend_mesh_border" id="backend_mesh_border" value="1" <%=backend_mesh_border=="1" and "checked" or "" %> onchange="updateArchImage()"> Gateway Mesh <b>Border</b> (ZeroMQ)
+      </label>
+      <br />
       <label>
-        <input type="checkbox"
-               name="backend_mesh_relay"
-               id="backend_mesh_relay"
-               value="1"
-               <%=backend_mesh_relay=="1"
-               and "checked"
-               or ""
-               %>
-        onchange="updateArchImage()"> Gateway Mesh <b>Relay</b> (ZeroMQ)
+        <input type="checkbox" name="backend_mesh_relay" id="backend_mesh_relay" value="1" <%=backend_mesh_relay=="1" and "checked" or "" %> onchange="updateArchImage()"> Gateway Mesh <b>Relay</b> (ZeroMQ)
       </label>
     </div>
   </div>
-
   <hr />
-
   <div class="cbi-section">
-    <button class="cbi-button cbi-button-apply"
-            type="button"
-            onclick="submitOverview()">Save & Apply</button>
+    <button class="cbi-button cbi-button-apply" type="button" onclick="submitOverview()">Save & Apply</button>
     <h3>Architecture Diagram</h3>
-    <img id="arch_img"
-         src="/luci-static/lora/lora_udp.png"
-         style="max-width:100%; border:1px solid #ccc; padding:5px; background:#fff;">
+    <img id="arch_img" src="/luci-static/lora/lora_udp.png" style="max-width:100%; border:1px solid #ccc; padding:5px; background:#fff;">
   </div>
   <script type="text/javascript">
     // 圖片對應表
     const archMap = {
       "udp": "lora_udp.png",
-
-      // Concentratord 單獨
-      "concentratord:udp": "lora_concentratord_udp.png",
-      "concentratord:mqtt": "lora_concentratord_mqtt.png",
-      "concentratord:border": "lora_concentratord_meshBorder.png",
-      "concentratord:relay": "lora_concentratord_meshRelay.png",
-
-      // Concentratord 雙組合
-      "concentratord:udp+mqtt": "lora_concentratord_udp_mqtt.png",
-      "concentratord:udp+border": "lora_concentratord_udp_meshBorder.png",
-      "concentratord:mqtt+border": "lora_concentratord_mqtt_meshBorder.png",
-      "concentratord:udp+relay": "lora_concentratord_udp_meshRelay.png",
-      "concentratord:mqtt+relay": "lora_concentratord_mqtt_meshRelay.png",
-
+      // Concentrator 單獨
+      "concentrator:udp": "lora_concentrator_udp.png",
+      "concentrator:mqtt": "lora_concentrator_mqtt.png",
+      "concentrator:border": "lora_concentrator_meshBorder.png",
+      "concentrator:relay": "lora_concentrator_meshRelay.png",
+      // Concentrator 雙組合
+      "concentrator:udp+mqtt": "lora_concentrator_udp_mqtt.png",
+      "concentrator:udp+border": "lora_concentrator_udp_meshBorder.png",
+      "concentrator:mqtt+border": "lora_concentrator_mqtt_meshBorder.png",
+      "concentrator:udp+relay": "lora_concentrator_udp_meshRelay.png",
+      "concentrator:mqtt+relay": "lora_concentrator_mqtt_meshRelay.png",
       // Concentratord 三組合
-      "concentratord:udp+mqtt+border": "lora_concentratord_udp_mqtt_meshBorder.png",
-      "concentratord:udp+mqtt+relay": "lora_concentratord_udp_mqtt_meshRelay.png"
-
+      "concentrator:udp+mqtt+border": "lora_concentrator_udp_mqtt_meshBorder.png",
+      "concentrator:udp+mqtt+relay": "lora_concentrator_udp_mqtt_meshRelay.png"
     };
 
     function updateArchImage() {
@@ -124,30 +66,25 @@
       var mqtt = document.getElementById("backend_mqtt").checked;
       var border = document.getElementById("backend_mesh_border").checked;
       var relay = document.getElementById("backend_mesh_relay").checked;
-
       var img = "/luci-static/lora/";
-
       if (mode === "udp") {
         img += archMap["udp"];
-      } else if (mode === "concentratord") {
+      } else if (mode === "concentrator") {
         var key = [];
         if (udp) key.push("udp");
         if (mqtt) key.push("mqtt");
         if (border) key.push("border");
         if (relay) key.push("relay");
-        key = "concentratord:" + key.join("+");
-
-        img += archMap[key] || "lora_concentratord.png"; // fallback
+        key = "concentrator:" + key.join("+");
+        img += archMap[key] || "lora_concentrator.png"; // fallback
       }
-
       document.getElementById("arch_img").src = img;
     }
-
     function toggleBackendSection() {
       var mode = document.getElementById("mode").value;
       var backendSection = document.getElementById("backend_section");
       var checkboxes = backendSection.querySelectorAll("input[type=checkbox]");
-      if (mode === "concentratord") {
+      if (mode === "concentrator") {
         backendSection.style.opacity = "1.0";
         checkboxes.forEach(cb => cb.disabled = false);
       } else {
@@ -155,17 +92,14 @@
         checkboxes.forEach(cb => cb.disabled = true);
       }
     }
-
     function submitOverview() {
       var form = document.getElementById("overviewForm");
       var formData = new FormData(form);
       formData.append("token", L.env.token);
-
       ["backend_udp", "backend_mqtt", "backend_mesh_border", "backend_mesh_relay"].forEach(id => {
         var cb = document.getElementById(id);
         if (cb && cb.checked) formData.append(id, "1");
       });
-
       fetch("<%=url('admin/lora/overview_set')%>", {
         method: "POST",
         body: formData
@@ -178,26 +112,21 @@
           alert("Error: " + err);
         });
     }
-
     function setupExclusiveMesh() {
       var border = document.getElementById("backend_mesh_border");
       var relay = document.getElementById("backend_mesh_relay");
-
       border.addEventListener("change", function () {
         if (border.checked) relay.checked = false;
         updateArchImage();
       });
-
       relay.addEventListener("change", function () {
         if (relay.checked) border.checked = false;
         updateArchImage();
       });
     }
-
     // 初始化
     toggleBackendSection();
     updateArchImage();
     setupExclusiveMesh();
   </script>
-
   <%+footer%>

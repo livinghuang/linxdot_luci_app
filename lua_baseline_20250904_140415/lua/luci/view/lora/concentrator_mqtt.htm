@@ -1,12 +1,91 @@
 <%+header%>
 
-
-<h2>MQTT Forwarder</h2>
+<h2>MQTT Forwarder 設定</h2>
 
 <div class="cbi-section">
-  <p><strong>Broker:</strong> <%= broker %></p>
-  <p><strong>Username:</strong> <%= user %></p>
-  <p><strong>Status:</strong> <%= status %></p>
+  <h3>基本設定</h3>
+  <form method="post" action="<%=url('admin/lora/concentrator_mqtt_set')%>">
+    <table class="table">
+        <td><b>MQTT Server</b></td>
+        <td><input type="text" name="server" value="<%=server%>" /></td>
+      </tr>
+      <tr>
+        <td><b>Username</b></td>
+        <td><input type="text" name="username" value="<%=username%>" /></td>
+      </tr>
+      <tr>
+        <td><b>Password</b></td>
+        <td><input type="password" name="password" value="<%=password%>" /></td>
+      </tr>
+      <tr>
+        <td><b>Topic Prefix</b></td>
+        <td><input type="text" name="topic_prefix" value="<%=topic_prefix%>" /></td>
+      </tr>
+      <tr>
+        <td><b>QoS</b></td>
+        <td>
+          <select name="qos">
+            <option value="0" <%=qos=="0" and "selected" or ""%>>0 - At most once</option>
+            <option value="1" <%=qos=="1" and "selected" or ""%>>1 - At least once</option>
+            <option value="2" <%=qos=="2" and "selected" or ""%>>2 - Exactly once</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td><b>Clean Session</b></td>
+        <td><input type="checkbox" name="clean_session" <%=clean_session and "checked" or ""%> /></td>
+      </tr>
+      <tr>
+        <td><b>JSON Encoding</b></td>
+        <td><input type="checkbox" name="json" <%=json and "checked" or ""%> /></td>
+      </tr>
+      <tr>
+        <td><b>Client ID</b></td>
+        <td><input type="text" name="client_id" value="<%=client_id%>" /></td>
+      </tr>
+    </table>
+
+    <hr />
+
+      <button class="cbi-button cbi-button-apply"
+              type="button">Save & Apply</button>
+  </form>
 </div>
+
+<hr />
+
+<!-- 架構圖 (固定為 MQTT 架構) -->
+<div class="cbi-section">
+  <h3>Architecture Diagram</h3>
+  <img id="arch_img_mqtt"
+       src="/luci-static/lora/lora_concentratord_mqtt.png"
+       style="max-width:100%; border:1px solid #ccc; padding:5px; background:#fff;">
+</div>
+
+<hr />
+
+<!-- Log Window -->
+<div class="cbi-section">
+  <h3>MQTT Forwarder Logs (Last 50 lines)</h3>
+  <pre id="mqtt-log"
+       style="background:#111; color:#0f0; padding:10px; max-height:300px; overflow:auto;">
+Loading logs...
+  </pre>
+</div>
+
+<script type="text/javascript">
+  function loadMqttLogs() {
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "<%=url('admin/lora/concentrator_mqtt_log')%>", true);
+    xhr.onload = function () {
+      if (xhr.status == 200) {
+        document.getElementById("mqtt-log").textContent = xhr.responseText;
+      }
+    };
+    xhr.send();
+  }
+  setInterval(loadMqttLogs, 5000);
+  loadMqttLogs();
+</script>
 
 <%+footer%>

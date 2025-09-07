@@ -1,0 +1,12 @@
+<div class="cbi-value">
+  <label class="cbi-value-title" for="region">Switch Region</label>
+  <div class="cbi-value-field">
+    <select name="region" id="region">
+      <% for _, r in ipairs(regions or {}) do %>
+        <option value="<%=r%>" <%= (info and info.region==r) and "selected" or "" %>>
+          <%=r%>
+        </option>
+      <% end %>
+    </select>
+  </div>
+</div>

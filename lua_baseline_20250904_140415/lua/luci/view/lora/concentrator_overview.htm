@@ -1,11 +1,143 @@
 <%+header%>
 
+  <h2>Concentrator Overview</h2>
 
-<h2>Concentratord Overview</h2>
+  <!-- 概觀資訊 -->
+  <div class="cbi-section">
+    <table class="table">
+      <tr>
+        <td><b>Gateway ID</b></td>
+        <td>
+          <%=gateway_id%>
+        </td>
+      </tr>
+      <tr>
+        <td><b>Status</b></td>
+        <td>
+          <%=status%>
+        </td>
+      </tr>
+      <tr>
+        <td><b>Firmware</b></td>
+        <td>
+          <%=firmware%>
+        </td>
+      </tr>
+    </table>
+  </div>
 
-<div class="cbi-section">
-  <p><strong>Gateway ID:</strong> <%= gateway_id %></p>
-  <p><strong>Status:</strong> <%= status %></p>
-</div>
+  <hr />
 
-<%+footer%>
+  <!-- 基本設定 -->
+  <div class="cbi-section">
+    <h3>基本設定</h3>
+    <form method="post"
+          action="<%=url('admin/lora/concentrator_set')%>">
+      <table class="table">
+        <tr>
+          <td><b>Region</b></td>
+          <td>
+              <%local regions = {"AS923", "AS923_1", "AS923_2", "AS923_3", "AS923_4",  "EU868", "US915", "KR920", "IN865"}%>
+              <select name="region">
+                <% for _, r in ipairs(regions) do %>
+                  <option value="<%=r%>" <%= region == r and "selected" or "" %>><%=r%></option>
+                <% end %>
+              </select>
+          </td>
+        </tr>
+        <tr>
+          <td><b>Antenna Gain (dBi)</b></td>
+          <td>
+            <input type="number" name="antenna_gain" value="<%=antenna_gain%>" min="0" max="20" step="1" />
+          </td>
+        </tr>
+      </table>
+      <div class="cbi-section">
+        <h3>Channel Plan (from channels_*.toml)</h3>
+        <p><b>Multi-SF Channels:</b></p>
+        <ul>
+
+        </ul>
+
+        <p><b>LoRa Std Channel:</b></p>
+        <ul>
+
+        </ul>
+      </div>
+      <button class="cbi-button cbi-button-apply"
+              type="button">Save & Apply</button>
+    </form>
+  </div>
+  <hr />
+  <!-- Enabled Backends -->
+  <div class="cbi-section">
+    <h3>Enabled Backends</h3>
+    <ul>
+      <% if
+         backend_udp=="1"
+         then
+         %>
+        <li>UDP Forwarder (1700)</li>
+        <% end
+           %>
+          <% if
+             backend_mqtt=="1"
+             then
+             %>
+            <li>MQTT Forwarder (1883)</li>
+            <% end
+               %>
+              <% if
+                 backend_mesh_border=="1"
+                 then
+                 %>
+                <li>Gateway Mesh <b>Border</b> (ZeroMQ)</li>
+                <% end
+                   %>
+                  <% if
+                     backend_mesh_relay=="1"
+                     then
+                     %>
+                    <li>Gateway Mesh <b>Relay</b> (ZeroMQ)</li>
+                    <% end
+                       %>
+    </ul>
+  </div>
+
+  <hr />
+
+  <!-- 架構圖 -->
+  <div class="cbi-section">
+    <h3>Architecture Diagram</h3>
+    <img id="arch_img"
+         src="/luci-static/lora/<%=arch_img%>"
+         style="max-width:100%; border:1px solid #ccc; padding:5px; background:#fff;">
+  </div>
+
+  <hr />
+
+  <!-- Log Window -->
+  <div class="cbi-section">
+    <h3>Concentratord Logs (Last 50 lines)</h3>
+    <pre id="concentrator-log"
+         style="background:#111; color:#0f0; padding:10px; max-height:300px; overflow:auto;">
+Loading logs...
+  </pre>
+  </div>
+
+  <script type="text/javascript">
+    function loadLogs() {
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", "<%=url('admin/lora/concentrator_log')%>", true);
+      xhr.onload = function () {
+        if (xhr.status == 200) {
+          document.getElementById("concentrator-log").textContent = xhr.responseText;
+        }
+      };
+      xhr.send();
+    }
+    setInterval(loadLogs, 5000); // 每 5 秒更新一次
+    loadLogs(); // 頁面載入時馬上讀取一次
+  </script>
+
+  <%+footer%>

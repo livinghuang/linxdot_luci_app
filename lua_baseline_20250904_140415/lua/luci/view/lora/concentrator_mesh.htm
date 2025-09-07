@@ -1,11 +1,168 @@
 <%+header%>
-  hello
-  <h2>Mesh Forwarder</h2>
 
-  <div class="cbi-section">
-    <p><strong>Mode:</strong> [PLACEHOLDER_MODE]</p>
-    <p><strong>Upstream:</strong> [PLACEHOLDER_UPSTREAM]</p>
-    <p><strong>Status:</strong> [PLACEHOLDER_STATUS]</p>
-  </div>
+<h2>Gateway Mesh 設定</h2>
 
-  <%+footer%>
+<div class="cbi-section">
+  <form method="post" action="<%=url('admin/lora/concentrator_mesh_set')%>">
+    <h3>基本設定</h3>
+    <table class="table">
+
+      <tr>
+        <td><b>Role</b></td>
+        <td>
+          <select name="role" id="role" onchange="updateRoleUI(); updateMeshImage();">
+            <option value="border" <%= role=="border" and "selected" or "" %>>Border</option>
+            <option value="relay"  <%= role=="relay"  and "selected" or "" %>>Relay</option>
+          </select>
+        </td>
+      </tr>
+
+      <tr>
+        <td><b>Signing Key (AES128 HEX)</b></td>
+        <td><input type="text" name="signing_key" value="<%=signing_key%>" size="40" /></td>
+      </tr>
+
+      <tr id="row_ignore_direct">
+        <td><b>Ignore Direct Uplinks</b></td>
+        <td><input type="checkbox" name="border_gateway_ignore_direct_uplinks" <%=border_gateway_ignore_direct_uplinks and "checked" or ""%> /></td>
+      </tr>
+
+      <tr id="row_heartbeat">
+        <td><b>Heartbeat Interval(min)</b></td>
+        <td><input type="number" name="heartbeat_interval" value="<%=heartbeat_interval%>" /></td>
+      </tr>
+
+      <tr>
+        <td><b>Max Hop Count</b></td>
+        <td><input type="number" name="max_hop_count" value="<%=max_hop_count%>" /></td>
+      </tr>
+      <tr>
+        <td><b>TX Power (EIRP)</b></td>
+        <td><input type="number" name="tx_power" value="<%=tx_power%>" /></td>
+      </tr>
+      <tr>
+        <td>
+            <b>Randomly Choice One of </b>
+            <br />
+            <b>Selected Frequencies (Hz)</b>
+            <br />
+            <b>For Relaying Up/Down link</b>
+        </td>
+        <td>
+          <% local freq_list = {923200000, 923400000, 923600000, 923800000,
+                                924000000, 924200000, 924400000, 924600000} %>
+          <% for _, f in ipairs(freq_list) do %>
+            <label>
+              <input type="checkbox" name="frequencies" value="<%=f%>"
+                <%= (frequencies and tostring(frequencies):find(tostring(f))) and "checked" or "" %> />
+              <%=f%>
+            </label><br />
+          <% end %>
+        </td>
+      </tr>
+    </table>
+
+    <h3>Data Rate 設定</h3>
+    <table class="table">
+      <tr>
+        <td><b>Modulation</b></td>
+        <td>
+          <select name="modulation">
+            <option value="LORA" <%=modulation=="LORA" and "selected" or ""%>>LoRa</option>
+            <option value="FSK"  <%=modulation=="FSK"  and "selected" or ""%>>FSK</option>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td><b>Spreading Factor</b></td>
+        <td><input type="number" name="spreading_factor" value="<%=spreading_factor%>" /></td>
+      </tr>
+      <tr>
+        <td><b>Bandwidth (Hz)</b></td>
+        <td><input type="number" name="bandwidth" value="<%=bandwidth%>" /></td>
+      </tr>
+      <tr>
+        <td><b>Code Rate</b></td>
+        <td>
+          <select name="code_rate">
+            <% for _, cr in ipairs({"4/5","4/6","4/7","4/8"}) do %>
+              <option value="<%=cr%>" <%= code_rate==cr and "selected" or "" %>><%=cr%></option>
+            <% end %>
+          </select>
+        </td>
+      </tr>
+      <tr>
+        <td><b>Bitrate (FSK only)</b></td>
+        <td><input type="number" name="bitrate" value="<%=bitrate%>" /></td>
+      </tr>
+    </table>
+
+    <div class="cbi-section">
+      <input class="cbi-button cbi-button-apply" type="submit" value="儲存 & 套用" />
+    </div>
+  </form>
+</div>
+
+<hr />
+
+<!-- 架構圖 -->
+<div class="cbi-section">
+  <h3>Architecture Diagram</h3>
+  <img id="mesh_img"
+       src="/luci-static/lora/<%= role=="border" and "lora_concentratord_meshBorder.png" or "lora_concentratord_meshRelay.png" %>"
+       style="max-width:100%; border:1px solid #ccc; padding:5px; background:#fff;">
+</div>
+
+<hr />
+
+<!-- Log Window -->
+<div class="cbi-section">
+  <h3>Mesh Logs (Last 50 lines)</h3>
+  <pre id="mesh-log"
+       style="background:#111; color:#0f0; padding:10px; max-height:300px; overflow:auto;">
+Loading logs...
+  </pre>
+</div>
+
+<script type="text/javascript">
+  function loadMeshLogs() {
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "<%=url('admin/lora/concentrator_mesh_log')%>", true);
+    xhr.onload = function () {
+      if (xhr.status == 200) {
+        document.getElementById("mesh-log").textContent = xhr.responseText;
+      }
+    };
+    xhr.send();
+  }
+  setInterval(loadMeshLogs, 5000);
+  loadMeshLogs();
+
+  function updateMeshImage() {
+    var role = document.getElementById("role").value;
+    var img = document.getElementById("mesh_img");
+    if (role === "border") {
+      img.src = "/luci-static/lora/lora_concentratord_meshBorder.png";
+    } else {
+      img.src = "/luci-static/lora/lora_concentratord_meshRelay.png";
+    }
+  }
+
+  function updateRoleUI() {
+    var role = document.getElementById("role").value;
+    var rowHeartbeat = document.getElementById("row_heartbeat");
+    var rowIgnore = document.getElementById("row_ignore_direct");
+    if (role === "border") {
+      rowHeartbeat.style.display = "none";
+      rowIgnore.style.display = "";
+    } else {
+      rowHeartbeat.style.display = "";
+      rowIgnore.style.display = "none";
+    }
+  }
+
+  // 初始化時執行一次
+  updateRoleUI();
+</script>
+
+<%+footer%>

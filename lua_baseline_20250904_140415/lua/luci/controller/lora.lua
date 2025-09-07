@@ -27,7 +27,7 @@ function index()
   entry({ "admin", "lora", "udp_log" }, call("udp_dispatch", "action_udp_log")).leaf = true
   entry({ "admin", "lora", "udp_info" }, call("udp_dispatch", "action_udp_info")).leaf = true
   entry({ "admin", "lora", "udp_service" }, call("udp_dispatch", "action_udp_service")).leaf = true
-
+  entry({ "admin", "lora", "udp_mode" }, call("udp_dispatch", "action_udp_mode")).leaf = true
   -- Concentrator (tabs)
   entry({ "admin", "lora", "concentrator" }, firstchild(), "Concentrator", 3).dependent = false
   entry({ "admin", "lora", "concentrator", "overview" }, call("concentrator_dispatch", "action_overview"), "Overview", 1)
@@ -37,19 +37,19 @@ function index()
 end
 
 function overview_dispatch(func)
-  local M = _load("lora.overview")
+  local M = _load("luci.controller.lora.overview")
   assert(type(M[func]) == "function", "overview." .. func .. " not found")
   return M[func]()
 end
 
 function udp_dispatch(func)
-  local M = _load("lora.udp")
+  local M = _load("luci.controller.lora.udp")
   assert(type(M[func]) == "function", "udp." .. func .. " not found")
   return M[func]()
 end
 
 function concentrator_dispatch(func)
-  local M = _load("lora.concentrator")
+  local M = _load("luci.controller.lora.concentrator")
   assert(type(M[func]) == "function", "concentrator." .. func .. " not found")
   return M[func]()
 end

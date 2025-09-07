@@ -1,0 +1,55 @@
+# LoRa forwarder overview
+config lora 'overview'
+        option mode 'udp' # udp | concentrator
+        option concentrator_udp  'disable'   # enable | disable
+        option concentrator_mqtt 'disable'   # enable | disable
+        option mesh              'enable'    # enable | disable
+        option mesh_role         'border'    # border | relay
+
+# UDP forwarder 設定
+config forwarder 'udp'
+        option selected_regions 'AS923'                 # fetch from /etc/lora who has global_conf.json_SX1250_xxx
+        option region 'AS923'                           # sync from /etc/lora/global_conf.json_SX1250_xxx
+        option server '192.0.0.1'                       # sync with /etc/lora/global_conf.json_SX1250_xxx
+        option port_up '1700'                           # sync with /etc/lora/global_conf.json_SX1250_xxx
+        option port_down '1700'                         # sync with /etc/lora/global_conf.json_SX1250_xxx
+        option gateway_id '0C8629FFFEE091A2'            # sync with /etc/lora/global_conf.json_SX1250_xxx
+
+# Concentrator 設定
+config forwarder 'concentrator'
+        option selected_regions 'AS923'                 # fetch from /etc/linxdot-opensource/chirpstack-software/chirpstack-concentratord-binary/config/ who has channels_xxx.toml
+        option region 'AS923'                           # sync from /etc/linxdot-opensource/chirpstack-software/chirpstack-concentratord-binary/config/concentratord.toml
+        option antenna_gain '0'                         # sync from /etc/linxdot-opensource/chirpstack-software/chirpstack-concentratord-binary/config/concentratord.toml
+
+# Concentrator UDP forwarder 設定
+config forwarder 'concentrator_udp'
+        option server '192.168.1.10'                    # sync with /etc/linxdot-opensource/chirpstack-software/chirpstack-udp-forwarder-binary/config/chirpstack-udp-forwarder.toml
+        option port '1700'                              # sync with /etc/linxdot-opensource/chirpstack-software/chirpstack-udp-forwarder-binary/config/chirpstack-udp-forwarder.toml
+        option region 'AS923'                           # sync with /etc/linxdot-opensource/chirpstack-software/chirpstack-udp-forwarder-binary/config/chirpstack-udp-forwarder.toml
+
+# Concentrator MQTT forwarder 設定
+config forwarder 'concentrator_mqtt'
+        option server '192.168.1.10'                    # sync with /etc/linxdot-opensource/chirpstack-software/chirpstack-mqtt-forwarder-binary/config/chirpstack-mqtt-forwarder.toml
+        option port '1883'                              # sync with /etc/linxdot-opensource/chirpstack-software/chirpstack-mqtt-forwarder-binary/config/chirpstack-mqtt-forwarder.toml
+        option client_id ''                             # sync with /etc/linxdot-opensource/chirpstack-software/chirpstack-mqtt-forwarder-binary/config/chirpstack-mqtt-forwarder.toml
+
+# Concentrator Mesh Border forwarder 設定
+config forwarder 'concentrator_meshBorder'
+
+# Concentrator Mesh Relay forwarder 設定
+config forwarder 'concentrator_meshRelay'
+
+
+# LoRa forwarder old setting
+config lora 'forwarder'
+        option port_up '1700'
+        option port_down '1700'
+        option gateway_id '0C8629FFFEE091A2'
+        option server '192.0.0.1'
+        option backend_mesh '0'
+        option backend_mesh_relay '0'
+        option backend_mqtt '0'
+        option backend_mesh_border '0'
+        option mode 'udp'
+        option backend_udp '0'
+        option region 'AS923'

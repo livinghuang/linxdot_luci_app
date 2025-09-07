@@ -1,11 +1,66 @@
 <%+header%>
 
-<h2>UDP Forwarder</h2>
+<h2>UDP Forwarder 設定</h2>
 
+<!-- 基本設定 -->
 <div class="cbi-section">
-  <p><strong>Server:</strong> <%= server %></p>
-  <p><strong>Port:</strong> <%= port %></p>
-  <p><strong>Status:</strong> <%= status %></p>
+  <h3>基本設定</h3>
+  <form method="post" action="<%=url('admin/lora/concentrator_udp_set')%>">
+    <h3>伺服器設定</h3>
+    <table class="table">
+      <tr>
+        <td><b>Server</b></td>
+        <td>
+          <input type="text" name="server" id="server" value="<%=server%>" />
+        </td>
+      </tr>
+      <tr>
+        <td><b>Port</b></td>
+        <td>
+          <input type="text" name="port" id="port" value="<%=port%>" />
+        </td>
+      </tr>
+    </table>
+
+      <button class="cbi-button cbi-button-apply"
+              type="button">Save & Apply</button>
+  </form>
 </div>
+
+<hr />
+
+<!-- 架構圖 (固定為 UDP 架構) -->
+<div class="cbi-section">
+  <h3>Architecture Diagram</h3>
+  <img id="arch_img_udp"
+       src="/luci-static/lora/lora_concentratord_udp.png"
+       style="max-width:100%; border:1px solid #ccc; padding:5px; background:#fff;">
+</div>
+
+<hr />
+
+<!-- Log Window -->
+<div class="cbi-section">
+  <h3>UDP Forwarder Logs (Last 50 lines)</h3>
+  <pre id="udp-log"
+       style="background:#111; color:#0f0; padding:10px; max-height:300px; overflow:auto;">
+Loading logs...
+  </pre>
+</div>
+
+<script type="text/javascript">
+  function loadUdpLogs() {
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "<%=url('admin/lora/concentrator_udp_log')%>", true);
+    xhr.onload = function () {
+      if (xhr.status == 200) {
+        document.getElementById("udp-log").textContent = xhr.responseText;
+      }
+    };
+    xhr.send();
+  }
+  setInterval(loadUdpLogs, 5000); // 每 5 秒更新一次
+  loadUdpLogs(); // 頁面載入時馬上讀取一次
+</script>
 
 <%+footer%>

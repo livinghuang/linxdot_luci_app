@@ -1,5 +1,33 @@
 <%+header%>
 
+<div id="udp-forwarder-page" style="position: relative; width: 100%;">
+
+  <!-- 灰色遮罩 -->
+  <div id="page-mask" style="
+      display: none;              /* 預設隱藏 */
+      position: absolute;         /* 只蓋在本容器 */
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(128,128,128,0.5);
+      z-index: 999;              /* 蓋在內容之上，但不會蓋到 side nav */
+      pointer-events: auto;
+  ">
+    <div style="
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        background: #fff;
+        padding: 20px 30px;
+        border-radius: 10px;
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    ">
+      Not available...
+    </div>
+  </div>
+
 <h2>UDP Forwarder</h2>
 
 <!-- Service Information -->
@@ -28,7 +56,7 @@
 <div class="cbi-section">
   <h3>Configuration</h3>
   <form id="configForm">
-    <%+lora/region_select%>
+    <%+lora/udp_region_select%>
 
     <div class="cbi-value">
       <label class="cbi-value-title" for="server">Server Address</label>
@@ -87,6 +115,7 @@
           style="width:100%; height:600px; border:1px solid #ccc; background:#f7f7f7;">
   </iframe>
 </div>
+</div>
 <script type="text/javascript">
 var autoRefreshTimer = null;
 
@@ -109,11 +138,6 @@ function toggleAutoRefresh() {
         autoRefreshTimer = null;
     }
 }
-
-window.onload = function() {
-    document.getElementById("autoRefresh").checked = true;
-    toggleAutoRefresh();
-};
 
 /* Reload Info */
 function reloadInfo() {
@@ -199,8 +223,32 @@ function clearLogWindow() {
     document.getElementById("log-content").innerText = "";  // 清掉前端 log 視窗
 }
 
+function showMask() {
+    document.getElementById("page-mask").style.display = "block";
+}
 
-
+function hideMask() {
+    document.getElementById("page-mask").style.display = "none";
+}
+window.onload = function() {
+    // 檢查 overview.mode
+fetch("<%=url('admin/lora/udp_mode')%>")
+  .then(r => r.text())
+  .then(txt => {
+    console.log("RAW response:", txt);
+    try {
+      var data = JSON.parse(txt);
+      console.log("mode is", data.mode);
+      if (data.mode !== "udp") {
+        showMask();
+      }
+    } catch (e) {
+      console.error("JSON parse failed", e);
+    }
+  })
+  .catch(err => console.error("Request failed", err));
+    document.getElementById("autoRefresh").checked = true;
+    toggleAutoRefresh();
+};
 </script>
-
 <%+footer%>
